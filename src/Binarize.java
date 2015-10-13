@@ -3,6 +3,8 @@
 // Date: 2014-10-02
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
 import java.awt.*;
@@ -26,6 +28,7 @@ public class Binarize extends JPanel {
 	
 	private JComboBox<String> methodList;	// the selected binarization method
 	private JLabel statusLine;				// to print some status text
+	private JSlider thresholdSlider;
 
 	public Binarize() {
         super(new BorderLayout(border, border));
@@ -57,7 +60,7 @@ public class Binarize extends JPanel {
          
         // selector for the binarization method
         JLabel methodText = new JLabel("Methode:");
-        String[] methodNames = {"50% Schwellwert", "Iso-Data-Algorithmus"};
+        String[] methodNames = {"Schwellwert", "Iso-Data-Algorithmus"};
         
         methodList = new JComboBox<String>(methodNames);
         methodList.setSelectedIndex(0);		// set initial method
@@ -68,9 +71,22 @@ public class Binarize extends JPanel {
         });
         
         // slider for threshold
-        JSlider thresholdSlider = new JSlider(0, 255, 128);
+        JLabel thresholdLabel = new JLabel("Schwellwert");
+        this.thresholdSlider = new JSlider(0, 255, 128);    
+        thresholdSlider.setMinorTickSpacing(25);
+        thresholdSlider.setMajorTickSpacing(50);
+        thresholdSlider.setPaintLabels(true);
+        thresholdSlider.setPaintTicks(true);
         
-        
+    	
+    	// Change-Listener for threshold slider
+    	 thresholdSlider.addChangeListener(new ChangeListener() {
+  			@Override
+  			public void stateChanged(ChangeEvent e) {
+  				binarizeImage();
+  			}
+  		});
+
         // some status text
         statusLine = new JLabel(" ");
         
@@ -81,6 +97,8 @@ public class Binarize extends JPanel {
         controls.add(load, c);
         controls.add(methodText, c);
         controls.add(methodList, c);
+        controls.add(thresholdLabel, c);
+        controls.add(thresholdSlider, c);
         
         JPanel images = new JPanel(new FlowLayout());
         images.add(srcView);
@@ -156,14 +174,15 @@ public class Binarize extends JPanel {
 		long startTime = System.currentTimeMillis();
 		
     	switch(methodList.getSelectedIndex()) {
-    	case 0:	// 50% Schwellwert
-    		binarize50(dstPixels);
+    	case 0:	// Schwellwert
+    		message += "; Schwellwert: " + thresholdSlider.getValue() + ";";
+    		binarize(dstPixels);
     		break;
     	case 1:	// ISO-Data-Algorithmus
     		java.util.Arrays.fill(dstPixels, 0xffffffff);
     		break;
     	}
-
+    
 		long time = System.currentTimeMillis() - startTime;
 		   	
         dstView.setPixels(dstPixels, width, height);
@@ -175,10 +194,12 @@ public class Binarize extends JPanel {
     	statusLine.setText(message + " in " + time + " ms");
     }
     
-    void binarize50(int pixels[]) {
+    void binarize(int pixels[]) {
+   		//int threshold = 128;
+    	int threshold = this.thresholdSlider.getValue();
     	for(int i = 0; i < pixels.length; i++) {
     		int gray = ((pixels[i] & 0xff) + ((pixels[i] & 0xff00) >> 8) + ((pixels[i] & 0xff0000) >> 16)) / 3;
-    		pixels[i] = gray < 128 ? 0xff000000 : 0xffffffff;
+			pixels[i] = gray < threshold ? 0xff000000 : 0xffffffff;
     	}
     }
     
