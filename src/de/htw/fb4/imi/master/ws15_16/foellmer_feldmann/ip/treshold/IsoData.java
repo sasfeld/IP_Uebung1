@@ -48,8 +48,15 @@ public class IsoData implements ThresholdFindingAlgorithm {
 		if (!this.thresholdIsGoodEnough(t)) {
 			this.counter++; 
 			
-			int Ma = this.calculateM(0, t - 1);
-			int Mb = this.calculateM(t, Histogram.MAX_VALUE);
+			int n0 = this.histogram.getFrequencyCountBetween(0, t - 1);
+			int n1 = this.histogram.getFrequencyCountBetween(t, Histogram.MAX_VALUE);
+			
+			if (n0 == 0 || n1 == 0) {
+				return this.oldThreshold;
+			}
+			
+			int Ma = this.calculateMean(0, t - 1);
+			int Mb = this.calculateMean(t, Histogram.MAX_VALUE);
 		
 			int newThreshold = (Ma + Mb) / 2;
 			this.oldThreshold = t;
@@ -61,18 +68,15 @@ public class IsoData implements ThresholdFindingAlgorithm {
 		}
 	}
 
-	private int calculateM(int minValue, int maxValue) {
-		// calculate sum of absolute frequencies
-		int sumFrequencies = 0;
-		for (int i = minValue; i <= maxValue; i++) {
-			sumFrequencies += this.histogram.getAbsoluteFrequencies()[i];
-		}
-
-		// we need to get the value on the X-Axis,
-		float factor = sumFrequencies / (float) this.histogram.getNumberOfPixels();		
-		int difference = maxValue - minValue;
+	private int calculateMean(int minValue, int maxValue) {
+		int count = this.histogram.getFrequencyCountBetween(minValue, maxValue);
 		
-		return minValue + Math.round(factor * difference);
+		int relativeCount = 0;
+		for (int i = minValue; i <= maxValue; i++) {
+			relativeCount += i * this.histogram.getAbsoluteFrequencies()[i];
+		}
+		
+		return relativeCount / count;
 	}
 
 	private boolean thresholdIsGoodEnough(final int newThreshold) {

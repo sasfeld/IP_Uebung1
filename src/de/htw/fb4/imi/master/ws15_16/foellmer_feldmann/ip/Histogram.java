@@ -40,9 +40,9 @@ public class Histogram {
 	 * @param maxValue
 	 * @return
 	 */
-	public int getFrequenciesBetween(int minValue, int maxValue) {
+	public int getFrequencyCountBetween(int minValue, int maxValue) {
 		int number = 0;
-		for (int i = minValue; i < maxValue; i++) {
+		for (int i = minValue; i <= maxValue; i++) {
 			number += this.getAbsoluteFrequencies()[i];
 		}
 		
