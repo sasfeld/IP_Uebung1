@@ -52,7 +52,7 @@ public class IsoData implements ThresholdFindingAlgorithm {
 			int n1 = this.histogram.getFrequencyCountBetween(t, Histogram.MAX_VALUE);
 			
 			if (n0 == 0 || n1 == 0) {
-				return this.oldThreshold;
+				return -1;
 			}
 			
 			int Ma = this.calculateMean(0, t - 1);
