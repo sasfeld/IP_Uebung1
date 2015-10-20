@@ -17,7 +17,7 @@ import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Histogram;
 public class IsoData implements ThresholdFindingAlgorithm {
 
 	public static final int DEFAULT_START_VALUE = 128;
-	private static final int DELTA = 10;
+
 	/**
 	 * Start value (tO). Default is 128.
 	 */
@@ -25,6 +25,8 @@ public class IsoData implements ThresholdFindingAlgorithm {
 
 	private Histogram histogram;
 	private int oldThreshold;
+	
+	protected int counter = 0;
 
 	public int getStartValue() {
 		return startValue;
@@ -44,6 +46,8 @@ public class IsoData implements ThresholdFindingAlgorithm {
 
 	private int runIsoData(int t) {
 		if (!this.thresholdIsGoodEnough(t)) {
+			this.counter++; 
+			
 			int Ma = this.calculateM(0, t - 1);
 			int Mb = this.calculateM(t, Histogram.MAX_VALUE);
 		
@@ -52,6 +56,7 @@ public class IsoData implements ThresholdFindingAlgorithm {
 
 			return runIsoData(newThreshold);
 		} else {
+			System.out.println("# Iterations: " + this.counter);
 			return t;
 		}
 	}

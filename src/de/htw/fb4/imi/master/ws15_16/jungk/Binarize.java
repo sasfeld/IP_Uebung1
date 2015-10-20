@@ -68,6 +68,14 @@ public class Binarize extends JPanel {
         		}
         	}        	
         });
+        
+    	// load image button
+        JButton outlineBtn = new JButton("Outline");
+        outlineBtn.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		createOutline();
+        	}        	
+        });
          
         // selector for the binarization method
         JLabel methodText = new JLabel("Methode:");
@@ -106,6 +114,7 @@ public class Binarize extends JPanel {
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(0,border,0,0);
         controls.add(load, c);
+        controls.add(outlineBtn, c);
         controls.add(methodText, c);
         controls.add(methodList, c);
         controls.add(thresholdLabel, c);
@@ -125,6 +134,10 @@ public class Binarize extends JPanel {
         binarizeImage();
 	}
 	
+	protected void createOutline() {
+				
+	}
+
 	private File openFile() {
         JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Images (*.jpg, *.png, *.gif)", "jpg", "png", "gif");
@@ -192,7 +205,7 @@ public class Binarize extends JPanel {
     		break;
     	case 1:	// ISO-Data-Algorithmus
         	int defaultStartValue = IsoData.DEFAULT_START_VALUE;
-    		message += "; ISO-Data-Algorithmus; t0=" + defaultStartValue;
+    		message += "; t0=" + defaultStartValue;
     		this.thresholdAlgorithm = Factory.newIsoDataAlgorithm(defaultStartValue);
     		//java.util.Arrays.fill(dstPixels, 0xffffffff);
     		binarize(dstPixels);
