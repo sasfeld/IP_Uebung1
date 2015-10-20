@@ -28,7 +28,7 @@ public class ThresholdUserInput implements ThresholdFindingAlgorithm {
 	 * @see de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.ThresholdFindingAlgorithm#calculateThreshold()
 	 */
 	@Override
-	public int calculateThreshold() {
+	public int calculateThreshold(int[] pixels) {
 		this.ensureThatInputComponentWasSet();
 		
 		return this.thresholdInput.getValue();

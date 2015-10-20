@@ -1,7 +1,7 @@
 // Copyright (C) 2014 by Klaus Jung
 // All rights reserved.
 // Date: 2014-10-02
-
+package de.htw.fb4.imi.master.ws15_16.jungk;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -39,6 +39,7 @@ public class Binarize extends JPanel {
 	 * Algorithm to find the appropriate/desired threshold.
 	 */
 	private ThresholdFindingAlgorithm thresholdAlgorithm;
+	private String message;
 
 	public Binarize() {
         super(new BorderLayout(border, border));
@@ -177,7 +178,7 @@ public class Binarize extends JPanel {
     	int srcPixels[] = srcView.getPixels();
     	int dstPixels[] = java.util.Arrays.copyOf(srcPixels, srcPixels.length);
     	
-    	String message = "Binarisieren mit \"" + methodName + "\"";
+    	this.message = "Binarisieren mit \"" + methodName + "\"";
 
     	statusLine.setText(message);
 
@@ -185,7 +186,7 @@ public class Binarize extends JPanel {
 		
 		switch(methodList.getSelectedIndex()) {
     	case 0:	// Schwellwert
-    		message += "; Schwellwert: " + thresholdSlider.getValue() + ";";
+    		message += "; Manueller Schwellwert; ";
     		this.thresholdAlgorithm = Factory.newThresholdUserInput(this.thresholdSlider);
     		binarize(dstPixels);
     		break;
@@ -210,13 +211,20 @@ public class Binarize extends JPanel {
     }
     
     void binarize(int pixels[]) {
-    	int threshold = this.thresholdAlgorithm.calculateThreshold();
+    	int threshold = this.thresholdAlgorithm.calculateThreshold(pixels);
+    	this.message += "; Schwellwert: " + threshold;
     	
     	for(int i = 0; i < pixels.length; i++) {
-    		int gray = ((pixels[i] & 0xff) + ((pixels[i] & 0xff00) >> 8) + ((pixels[i] & 0xff0000) >> 16)) / 3;
+    		int pixelValue = pixels[i];
+			int gray = calculateGrayValue(pixelValue);
 			pixels[i] = gray < threshold ? 0xff000000 : 0xffffffff;
     	}
     }
+
+	public static int calculateGrayValue(int pixelValue) {
+		// greyValue = R + G + B / 3
+		return ((pixelValue & 0xff) + ((pixelValue & 0xff00) >> 8) + ((pixelValue & 0xff0000) >> 16)) / 3;
+	}
     
 
 }

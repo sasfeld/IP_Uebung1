@@ -1,6 +1,7 @@
 // Copyright (C) 2010 by Klaus Jung
 // All rights reserved.
 // Date: 2010-03-15
+package de.htw.fb4.imi.master.ws15_16.jungk;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
