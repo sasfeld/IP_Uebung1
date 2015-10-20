@@ -6,6 +6,11 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Factory;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.IsoData;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.ThresholdFindingAlgorithm;
+
 import java.awt.event.*;
 import java.awt.*;
 import java.io.File;
@@ -29,6 +34,11 @@ public class Binarize extends JPanel {
 	private JComboBox<String> methodList;	// the selected binarization method
 	private JLabel statusLine;				// to print some status text
 	private JSlider thresholdSlider;
+	
+	/**
+	 * Algorithm to find the appropriate/desired threshold.
+	 */
+	private ThresholdFindingAlgorithm thresholdAlgorithm;
 
 	public Binarize() {
         super(new BorderLayout(border, border));
@@ -173,13 +183,18 @@ public class Binarize extends JPanel {
 
 		long startTime = System.currentTimeMillis();
 		
-    	switch(methodList.getSelectedIndex()) {
+		switch(methodList.getSelectedIndex()) {
     	case 0:	// Schwellwert
     		message += "; Schwellwert: " + thresholdSlider.getValue() + ";";
+    		this.thresholdAlgorithm = Factory.newThresholdUserInput(this.thresholdSlider);
     		binarize(dstPixels);
     		break;
     	case 1:	// ISO-Data-Algorithmus
-    		java.util.Arrays.fill(dstPixels, 0xffffffff);
+        	int defaultStartValue = IsoData.DEFAULT_START_VALUE;
+    		message += "; ISO-Data-Algorithmus; t0=" + defaultStartValue;
+    		this.thresholdAlgorithm = Factory.newIsoDataAlgorithm(defaultStartValue);
+    		//java.util.Arrays.fill(dstPixels, 0xffffffff);
+    		binarize(dstPixels);
     		break;
     	}
     
@@ -195,8 +210,8 @@ public class Binarize extends JPanel {
     }
     
     void binarize(int pixels[]) {
-   		//int threshold = 128;
-    	int threshold = this.thresholdSlider.getValue();
+    	int threshold = this.thresholdAlgorithm.calculateThreshold();
+    	
     	for(int i = 0; i < pixels.length; i++) {
     		int gray = ((pixels[i] & 0xff) + ((pixels[i] & 0xff00) >> 8) + ((pixels[i] & 0xff0000) >> 16)) / 3;
 			pixels[i] = gray < threshold ? 0xff000000 : 0xffffffff;
