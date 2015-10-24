@@ -43,21 +43,25 @@ public class Outline {
 		
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {				
-				int pos = calc1DPosition(width, x, y);
-				
+				int pos = calc1DPosition(width, x, y);				
 			
 				this.originalBinaryPixels[x][y] = originalPixels[pos];			
 			}
 		}
-	}
-
-	private int calc1DPosition(int width, int x, int y) {
-		int pos = y * width + x;
-		return pos;
-	}
+	}	
 	
 	public void setOriginalBinaryPixels(int[][] originalPixels) {
 		this.originalBinaryPixels = originalPixels;
+	}
+	
+	public int[][] executeOutline()
+	{
+		this.ensureThatOriginalWasSet();
+		
+		this.erodePixel();
+		this.outlinePixel();
+		
+		return this.outlinePixels;
 	}
 	
 	protected int[][] dilatePixel(int[][] structureElement, int binaryPixels[][])
@@ -68,7 +72,7 @@ public class Outline {
 			for (int j = 0; j < structureElement[i].length; j++) {
 				for (int x = 0; i + x < binaryPixels.length; x++) {
 					for (int y = 0; j + y < binaryPixels[x].length; y++) {
-						dilatedPixels[i + x][j + y] = 1;
+						dilatedPixels[i + x][j + y] = binaryPixels[x][y];
 					}
 				}
 			}
@@ -82,11 +86,7 @@ public class Outline {
 		
 		for (int i = 0; i < pixels.length; i++) {
 			for (int j = 0; j < pixels[i].length; j++) {
-				if (pixels[i][j] == 0){
-					invertedPixels[i][j] = 1;
-				} else {
-					invertedPixels[i][j] = 0;
-				}
+				invertedPixels[i][j] = pixels[i][j] == 0xff000000 ? 0xffffffff : 0xff000000;				
 			}
 		} 
 		
@@ -124,8 +124,10 @@ public class Outline {
 		
 		for (int i = 0; i < erodedPixels.length; i++) {
 			for (int j = 0; j < erodedPixels[i].length; j++) {
-				if (this.erodedPixels[i][j] == this.originalBinaryPixels[i][j]) {
+				if (this.erodedPixels[i][j] != this.originalBinaryPixels[i][j]) {
 					this.outlinePixels[i][j] = this.erodedPixels[i][j];
+				} else {
+					this.outlinePixels[i][j] = 0xffffffff;
 				}
 			}
 		}
@@ -135,16 +137,11 @@ public class Outline {
 		if (null == this.originalBinaryPixels) {
 			throw new IllegalStateException("originalPixels wasn't set. Please set it before calling executeOutline().");
 		}		
-	}
+	}	
 	
-	public int[][] executeOutline()
-	{
-		this.ensureThatOriginalWasSet();
-		
-		this.erodePixel();
-		this.outlinePixel();
-		
-		return this.outlinePixels;
+	private int calc1DPosition(int width, int x, int y) {
+		int pos = y * width + x;
+		return pos;
 	}
 
 	public int[] getFlatArray(int width, int height, int[][] pixels) {
