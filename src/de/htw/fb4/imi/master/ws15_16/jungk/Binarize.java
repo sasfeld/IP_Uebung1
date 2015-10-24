@@ -8,6 +8,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.Factory;
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.outline.Outline;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.IsoData;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.ThresholdFindingAlgorithm;
 
@@ -23,7 +24,7 @@ public class Binarize extends JPanel {
 	private static final int maxHeight = 400;
 	private static final File openPath = new File(".");
 	private static final String title = "Binarisierung";
-	private static final String author = "MeinName";	// TODO: type in your name here
+	private static final String author = "Föllmer & Feldmann";	// TODO: type in your name here
 	private static final String initalOpen = "tools1.png";
 	
 	private static JFrame frame;
@@ -40,6 +41,11 @@ public class Binarize extends JPanel {
 	 */
 	private ThresholdFindingAlgorithm thresholdAlgorithm;
 	private String message;
+	
+	/**
+	 * Algorithm to create the outline
+	 */
+	private Outline outline;
 
 	public Binarize() {
         super(new BorderLayout(border, border));
@@ -70,11 +76,24 @@ public class Binarize extends JPanel {
         });
         
     	// load image button
-        JButton outlineBtn = new JButton("Outline");
-        outlineBtn.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		createOutline();
-        	}        	
+//        JButton outlineBtn = new JButton("Outline");
+//        outlineBtn.addActionListener(new ActionListener() {
+//        	public void actionPerformed(ActionEvent e) {
+//        		createOutline();
+//        	}        	
+//        });
+        // load outline checkbox
+        JCheckBox outlineBox = new JCheckBox("Outline");
+        outlineBox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED){
+					createOutline();
+				} else {
+					binarizeImage();
+				}
+//				System.out.println(e.getStateChange() == ItemEvent.SELECTED ? "selected" : "unasdted");	
+			}        	
         });
          
         // selector for the binarization method
@@ -114,7 +133,7 @@ public class Binarize extends JPanel {
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(0,border,0,0);
         controls.add(load, c);
-        controls.add(outlineBtn, c);
+        controls.add(outlineBox, c);
         controls.add(methodText, c);
         controls.add(methodList, c);
         controls.add(thresholdLabel, c);
@@ -134,9 +153,113 @@ public class Binarize extends JPanel {
         binarizeImage();
 	}
 	
-	protected void createOutline() {
+	protected void createOutline() {        
+        // image dimensions
+        int width = srcView.getImgWidth();
+        int height = srcView.getImgHeight();
+    	
+    	// get pixels arrays
+    	int srcPixels[] = srcView.getPixels();
+    	int dstPixels[] = java.util.Arrays.copyOf(srcPixels, srcPixels.length);
+    	int eroPixels[] = new int [dstPixels.length];
+    	
+    	// generate binary image
+		binarize(dstPixels);
+		
+		Outline outlineAlgorithm = new Outline();
+		outlineAlgorithm.setOriginalBinaryPixels(width, height, dstPixels);	
+		
+		int kernelA = 0;
+		int kernelB = 0;
+		int kernelC = 0;
+		int kernelD = 0;
+		int kernelE = 0;
+    	
+    	this.message = "Create Outline";
+    	statusLine.setText(message);
+
+		long startTime = System.currentTimeMillis();
+		
+		//---------------testarea---------------//
+		
+//		for (int i=0; i< dstPixels.length;i++){
+//			if (dstPixels[i] != 0){
+//			System.out.println(dstPixels[i] & 0xff);
+//			}
+//		}
+		/*
+		for (int y = 1; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+//				System.out.println("Y:" + y + " X: " +x); // loop test
 				
-	}
+				int pos = y * width + x;
+//				System.out.println("Aktuelle Pos: " + pos);		// pos test
+				
+				// strukturelement mit 4er nachbarschaft -> kernel
+				// oben: (0,-1) links: (-1,0) rechts: (1,0) unten: (0,1) 
+				// 4-connected erosion
+				try {
+					kernelE = dstPixels[y * width + x] ;
+					
+					if ((y-1) < 0){
+						
+						kernelA = dstPixels[(y-1) * width + x] ;												
+					} else {
+						kernelA = kernelE;
+					}
+					
+					if ((x-1) < 0){
+						kernelB = dstPixels[y * width + (x-1)] ;
+											
+					} else {
+						kernelB = kernelE;	
+					}
+					
+					if ((x+1) > width){
+						kernelC = kernelE;	
+					} else {
+						kernelC = dstPixels[y * width + (x+1)] ;
+					}
+					
+					if ((y+1) > height) {
+						kernelD = kernelE;	
+					} else {
+						kernelD = dstPixels[(y+1) * width + x] ;
+					}
+					
+
+					
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+
+
+				
+				int z = Math.min(Math.min(Math.min(Math.min(kernelA, kernelB), kernelC), kernelD), kernelE);
+					
+//				System.out.println("so: " + z);
+
+				
+				dstPixels[pos] = z;
+			}			
+		}*/
+		
+		//---------------testarea---------------//
+    
+		long time = System.currentTimeMillis() - startTime;
+		   	
+		// paint result
+		int[][] outlinePixels = outlineAlgorithm.executeOutline();
+		dstPixels = outlineAlgorithm.getFlatArray(width, height, outlinePixels);
+        dstView.setPixels(dstPixels, width, height);
+        
+        //dstView.saveImage("out.png");
+    	
+        frame.pack();
+        
+    	statusLine.setText(message + " in " + time + " ms");
+				
+	}//end of createOutline
 
 	private File openFile() {
         JFileChooser chooser = new JFileChooser();

@@ -7,6 +7,7 @@ package de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip;
 
 import javax.swing.JSlider;
 
+import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.outline.Outline;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.IsoData;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.ThresholdFindingAlgorithm;
 import de.htw.fb4.imi.master.ws15_16.foellmer_feldmann.ip.treshold.ThresholdUserInput;
@@ -35,6 +36,11 @@ public class Factory {
 		algorithm.setStartValue(startValue);
 		
 		return algorithm;
+	}
+	
+	public static Outline newOutlineAlgorithm()
+	{
+		return new Outline();
 	}
 
 }
