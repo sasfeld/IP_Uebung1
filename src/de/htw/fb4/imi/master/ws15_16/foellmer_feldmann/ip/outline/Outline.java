@@ -24,15 +24,14 @@ public class Outline {
 		this.structureElement[0][1] = 1;
 		this.structureElement[0][2] = 0;
 		this.structureElement[1][0] = 1;
+		this.structureElement[1][1] = 1;
 		this.structureElement[1][2] = 1;
-		this.structureElement[1][3] = 1;
 		this.structureElement[2][0] = 0;
 		this.structureElement[2][1] = 1;
-		this.structureElement[2][3] = 0;
+		this.structureElement[2][2] = 0;
 	}
 	
 	public int[][] getOriginalPixels() {
-		System.out.println("test1: " + originalBinaryPixels.length);
 		return originalBinaryPixels;
 	}
 	
@@ -43,12 +42,18 @@ public class Outline {
 		this.originalBinaryPixels = new int[width][height];
 		
 		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; x++) {				
-				int pos = x * width + y;
+			for (int y = 0; y < height; y++) {				
+				int pos = calc1DPosition(width, x, y);
 				
-				this.originalBinaryPixels[x][y] = originalPixels[pos];
+			
+				this.originalBinaryPixels[x][y] = originalPixels[pos];			
 			}
 		}
+	}
+
+	private int calc1DPosition(int width, int x, int y) {
+		int pos = y * width + x;
+		return pos;
 	}
 	
 	public void setOriginalBinaryPixels(int[][] originalPixels) {
@@ -60,9 +65,9 @@ public class Outline {
 		int[][] dilatedPixels = new int[this.width][this.height];
 		
 		for (int i = 0; i < structureElement.length; i++) {
-			for (int j = 0; j < structureElement.length; j++) {
-				for (int x = 0; x < binaryPixels.length; x++) {
-					for (int y = 0; y < binaryPixels.length; y++) {
+			for (int j = 0; j < structureElement[i].length; j++) {
+				for (int x = 0; i + x < binaryPixels.length; x++) {
+					for (int y = 0; j + y < binaryPixels[x].length; y++) {
 						dilatedPixels[i + x][j + y] = 1;
 					}
 				}
@@ -76,7 +81,7 @@ public class Outline {
 		int[][] invertedPixels = new int[pixels.length][pixels[0].length];
 		
 		for (int i = 0; i < pixels.length; i++) {
-			for (int j = 0; j < pixels.length; j++) {
+			for (int j = 0; j < pixels[i].length; j++) {
 				if (pixels[i][j] == 0){
 					invertedPixels[i][j] = 1;
 				} else {
@@ -92,12 +97,12 @@ public class Outline {
 		int[][] reflectedPixels = new int[pixels.length][pixels[0].length];
 		
 		for (int i = 0; i < pixels.length; i++) {
-			for (int j = 0; j < pixels.length; j++) {
+			for (int j = 0; j < pixels[i].length; j++) {
 				reflectedPixels[j][i] = pixels[i][j];
 			}
 		} 
 		
-		return null;
+		return reflectedPixels;
 	}
 
 	/**
@@ -105,11 +110,11 @@ public class Outline {
 	 */
 	protected void erodePixel() 
 	{
-		int[][] inverted = this.invertPixels(this.originalBinaryPixels);
-		int[][] reflectedStructure = this.reflectPixels(this.structureElement);
+		int[][] invertedOriginal = this.invertPixels(this.originalBinaryPixels);
+		int[][] reflectedStructureElement = this.reflectPixels(this.structureElement);
 		
 		this.erodedPixels = this.invertPixels(
-				this.dilatePixel(reflectedStructure, inverted));	
+				this.dilatePixel(reflectedStructureElement, invertedOriginal));	
 	}	
 
 	protected void outlinePixel()
@@ -118,7 +123,7 @@ public class Outline {
 		this.outlinePixels = new int[this.erodedPixels.length][this.erodedPixels[0].length];
 		
 		for (int i = 0; i < erodedPixels.length; i++) {
-			for (int j = 0; j < erodedPixels.length; j++) {
+			for (int j = 0; j < erodedPixels[i].length; j++) {
 				if (this.erodedPixels[i][j] == this.originalBinaryPixels[i][j]) {
 					this.outlinePixels[i][j] = this.erodedPixels[i][j];
 				}
@@ -145,9 +150,9 @@ public class Outline {
 	public int[] getFlatArray(int width, int height, int[][] pixels) {
 		int[] flat = new int[width * height];
 		
-		for (int i = 0; i < pixels.length; i++) {
-			for (int j = 0; j < pixels[i].length; j++) {
-				int pos = i * width + j;
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				int pos = calc1DPosition(width, i, j);
 				flat[pos] = pixels[i][j];
 			}
 		}
