@@ -24,7 +24,7 @@ public class Binarize extends JPanel {
 	private static final int maxHeight = 400;
 	private static final File openPath = new File(".");
 	private static final String title = "Binarisierung";
-	private static final String author = "Föllmer & Feldmann";	// TODO: type in your name here
+	private static final String author = "Markus Föllmer & Sascha Feldmann";
 	private static final String initalOpen = "tools1.png";
 	
 	private static JFrame frame;
@@ -41,11 +41,6 @@ public class Binarize extends JPanel {
 	 */
 	private ThresholdFindingAlgorithm thresholdAlgorithm;
 	private String message;
-	
-	/**
-	 * Algorithm to create the outline
-	 */
-	private Outline outline;
 
 	public Binarize() {
         super(new BorderLayout(border, border));
@@ -161,91 +156,17 @@ public class Binarize extends JPanel {
     	// get pixels arrays
     	int srcPixels[] = srcView.getPixels();
     	int dstPixels[] = java.util.Arrays.copyOf(srcPixels, srcPixels.length);
-    	int eroPixels[] = new int [dstPixels.length];
     	
     	// generate binary image
 		binarize(dstPixels);
 		
-		Outline outlineAlgorithm = new Outline();
+		Outline outlineAlgorithm = Factory.newOutlineAlgorithm();
 		outlineAlgorithm.setOriginalBinaryPixels(width, height, dstPixels);	
-		
-		int kernelA = 0;
-		int kernelB = 0;
-		int kernelC = 0;
-		int kernelD = 0;
-		int kernelE = 0;
     	
     	this.message = "Create Outline";
     	statusLine.setText(message);
 
 		long startTime = System.currentTimeMillis();
-		
-		//---------------testarea---------------//
-		
-//		for (int i=0; i< dstPixels.length;i++){
-//			if (dstPixels[i] != 0){
-//			System.out.println(dstPixels[i] & 0xff);
-//			}
-//		}
-		/*
-		for (int y = 1; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-//				System.out.println("Y:" + y + " X: " +x); // loop test
-				
-				int pos = y * width + x;
-//				System.out.println("Aktuelle Pos: " + pos);		// pos test
-				
-				// strukturelement mit 4er nachbarschaft -> kernel
-				// oben: (0,-1) links: (-1,0) rechts: (1,0) unten: (0,1) 
-				// 4-connected erosion
-				try {
-					kernelE = dstPixels[y * width + x] ;
-					
-					if ((y-1) < 0){
-						
-						kernelA = dstPixels[(y-1) * width + x] ;												
-					} else {
-						kernelA = kernelE;
-					}
-					
-					if ((x-1) < 0){
-						kernelB = dstPixels[y * width + (x-1)] ;
-											
-					} else {
-						kernelB = kernelE;	
-					}
-					
-					if ((x+1) > width){
-						kernelC = kernelE;	
-					} else {
-						kernelC = dstPixels[y * width + (x+1)] ;
-					}
-					
-					if ((y+1) > height) {
-						kernelD = kernelE;	
-					} else {
-						kernelD = dstPixels[(y+1) * width + x] ;
-					}
-					
-
-					
-				} catch (Exception e) {
-					// TODO: handle exception
-				}
-
-
-				
-				int z = Math.min(Math.min(Math.min(Math.min(kernelA, kernelB), kernelC), kernelD), kernelE);
-					
-//				System.out.println("so: " + z);
-
-				
-				dstPixels[pos] = z;
-			}			
-		}*/
-		
-		//---------------testarea---------------//
-    
 		long time = System.currentTimeMillis() - startTime;
 		   	
 		// paint result
@@ -299,8 +220,7 @@ public class Binarize extends JPanel {
                 createAndShowGUI();
             }
         });
-	}
-	
+	}	
 	
     protected void binarizeImage() {
   
@@ -361,7 +281,5 @@ public class Binarize extends JPanel {
 		// greyValue = R + G + B / 3
 		return ((pixelValue & 0xff) + ((pixelValue & 0xff00) >> 8) + ((pixelValue & 0xff0000) >> 16)) / 3;
 	}
-    
-
 }
     
